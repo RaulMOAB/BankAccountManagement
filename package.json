@@ -2,9 +2,9 @@
   "name": "bankaccountmanagement",
   "version": "1.0.0",
   "description": "\"Bank Account Management\"",
-  "main": "index.js",
+  "main": "script.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "nodemon script.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
