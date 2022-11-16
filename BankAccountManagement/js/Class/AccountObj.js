@@ -16,5 +16,9 @@ class AccountObj{
         this.#accountType = accountType;
         this.#clientType = clientType;
     }
+
+    get fullNameClient(){
+        return this.#fullNameClient;
+    }
     
 }
