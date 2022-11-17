@@ -36,16 +36,14 @@ function getApiClients() {
 function setDinamicClients(data_clients) {
   let table_body = $("#tbody");
 
-  //--------CREATE ELEMENTS--------//
+  //--------CREATE TABLE--------//
 
   data_clients.forEach((element, index) => {
-    let row = "<tr>"
-    table_body.append(
-      `<td><input type='text' class='dni_input' disabled value='${element.DNI}'></td>`
-    );
-    table_body.append(
-      `<td><input type='text' class='names' id='names_input_${index}' value='${element.NAME}' maxlength='30'></td>`
-    );
+    let row = "<tr>";
+
+    row += `<td><input type='text' class='dni_input' disabled value='${element.DNI}'></td>`;
+
+    row += `<td><input type='text' class='names' id='names_input_${index}' value='${element.NAME}' maxlength='30'></td>`;
 
     let account_options = [
       "Savings account",
@@ -57,7 +55,7 @@ function setDinamicClients(data_clients) {
       "Tax-Free Savings Account",
     ];
     let select = `<td><select>`;
-  //*OPTION
+    //*OPTION
     account_options.forEach((item, index) => {
       if (element.ACCOUNT_TYPE === item) {
         select += `<option value='${index}' selected >${item}</option>`;
@@ -68,27 +66,24 @@ function setDinamicClients(data_clients) {
 
     select += "</select></td>";
 
-    table_body.append(select);
+    row += select;
 
-    table_body.append(
-      `<td><input type='text' class='amount' id='amount_input_${index}' value='${element.AMOUNT}'></td>`
-    );
+    row += `<td><input type='text' class='amount' id='amount_input_${index}' value='${element.AMOUNT}'></td>`;
 
-    table_body.append(
-      `<td><input type='text' class='client' id='client_type_${index}' disabled value='${element.CLIENT_TYPE}'></td>`
-    );
+    row += `<td><input type='text' class='client' id='client_type_${index}' disabled value='${element.CLIENT_TYPE}'></td>`;
 
     $(function () {
       $(".entry_date").datepicker();
     });
+
     let date = formatDate(element.ENTRY_DATE);
 
-    entry_date = table_body.append(
-      `<td><input type='text' class='entry_date' id='date_input_${index}' value='${date}'></td>`
-    );
-    row += "</tr>"
+    row += `<td><input type='text' class='entry_date' id='date_input_${index}' value='${date}'></td>`;
+   
+    row += "</tr>";
     table_body.append(row);
 
+    //***INICIALIZE OBJ*******/
     client_account = new AccountTypeObj(element.DNI, element.ACCOUNT_TYPE);
     client_type = new ClientTypeObj(element.DNI, element.CLIENT_TYPE, "");
     account = new AccountObj(
@@ -101,7 +96,6 @@ function setDinamicClients(data_clients) {
     ); //*Parent Obj
     accounts.push(account); //*Add all clients into an array
   });
-
 
   //*******TEST********/
   $(".names").change(function () {
@@ -116,23 +110,18 @@ function setDinamicClients(data_clients) {
     validateDate($(this));
   });
 
-  $('select').change('option', function(){
+  $("select").change("option", function () {
     console.log($(this).val()); // valor
 
-    if ($('option')) {
-      
+    if ($("option")) {
     }
-  })
+  });
 
   //-----------BUTTON EVENT------------//
   $("#modify_btn").click(function () {
     let names = $(".names");
     let amounts = $(".amount");
     let entry_dates = $(".entry_date");
-
-    /*    names.each(function(index, element){
-      validateFullName(element)    
-     }) */
 
     is_valid_name = names.hasClass("error");
     is_valid_amount = amounts.hasClass("error");
@@ -145,10 +134,6 @@ function setDinamicClients(data_clients) {
     } else {
       console.log("hay clase error");
     }
-
-    /*  amount.each(function(index, element){
-        validateAmount(element);
-      })   */
   });
   validateDate();
 }
