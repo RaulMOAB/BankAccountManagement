@@ -2,6 +2,7 @@
 
 let data_clients;
 let accounts = [];
+let modified_accounts = [];
 let list_client_types = ["Poor client", "Normal client", "Very rich client"];
 
 let account;
@@ -39,7 +40,7 @@ function setDinamicClients(data_clients) {
   //--------CREATE TABLE--------//
 
   data_clients.forEach((element, index) => {
-    let row = "<tr>";
+    let row = `<tr>`;
 
     row += `<td><input type='text' class='dni_input' disabled value='${element.DNI}'></td>`;
 
@@ -58,9 +59,9 @@ function setDinamicClients(data_clients) {
     //*OPTION
     account_options.forEach((item, index) => {
       if (element.ACCOUNT_TYPE === item) {
-        select += `<option value='${index}' selected >${item}</option>`;
+        select += `<option value='${item}' selected >${item}</option>`;
       } else {
-        select += `<option value='${index}'>${item}</option>`;
+        select += `<option value='${item}'>${item}</option>`;
       }
     });
 
@@ -96,10 +97,18 @@ function setDinamicClients(data_clients) {
     ); //*Parent Obj
     accounts.push(account); //*Add all clients into an array
   });
-
+//console.log(accounts);
   //*******TEST********/
   $(".names").change(function () {
-    validateFullName($(this));
+    if (validateFullName($(this))) {
+      console.log('esta ok');
+      //**funcion de añadir propiedad al nuevo array de objetos modificados
+    }else{
+      console.log('no funciona');
+    }
+    
+    
+
   });
 
   $(".amount").change(function () {
@@ -113,8 +122,7 @@ function setDinamicClients(data_clients) {
   $("select").change("option", function () {
     console.log($(this).val()); // valor
 
-    if ($("option")) {
-    }
+    
   });
 
   //-----------BUTTON EVENT------------//
@@ -129,11 +137,14 @@ function setDinamicClients(data_clients) {
 
     if (!is_valid_name && !is_valid_amount && !is_valid_date) {
       //*si is_valid_names NO tiene la clase error esta Ok
+      console.log(modified_accounts);
+      console.log(accounts);
       console.log("modificando datos");
       //*los names estan listos para ser añadidos al objeto
     } else {
       console.log("hay clase error");
     }
+
   });
   validateDate();
 }
@@ -159,9 +170,11 @@ function validateFullName(name) {
   if (regExp.test(name_value)) {
     $(name).removeClass("error");
     $(name).css("border-color", "green");
+    return true;
   } else {
     $(name).css("border-color", "crimson");
     $(name).addClass("error");
+   return false;
   }
 }
 
@@ -189,6 +202,13 @@ function validateAmount(amount) {
       $(amount).parent().next().children().val(list_client_types[0]);
       $(amount).css("color", "red");
     }
+
+   /*  let row_amount_index = $(amount).parent().parent().index(); 
+    let modified_amount = accounts[row_amount_index];
+    modified_amount.amount = amount_value;
+    modified_accounts.push(modified_amount); */
+
+
   } else {
     $(amount).addClass("error");
     $(amount).css("border-color", "crimson");
