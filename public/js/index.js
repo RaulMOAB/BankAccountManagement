@@ -27,7 +27,7 @@ function getApiClients() {
     url: "http://127.0.0.1:3000/api/clients",
     success: function (result) {
       console.log("Llamada a api, results");
-      console.log(result.response[0]);
+      //console.log(result.response[0]);
       data_clients = result.response;
       setDinamicClients(data_clients);
     },
@@ -96,6 +96,9 @@ function setDinamicClients(data_clients) {
       client_type
     ); //*Parent Obj
     accounts.push(account); //*Add all clients into an array
+    modified_accounts = accounts.map((element)=>{//*Copy from original array
+      return element;
+    })
   });
 //console.log(accounts);
   //*******TEST********/
@@ -103,6 +106,10 @@ function setDinamicClients(data_clients) {
     if (validateFullName($(this))) {
       console.log('esta ok');
       //**funcion de añadir propiedad al nuevo array de objetos modificados
+      let row_index = $(this).parent().parent().index(); 
+      modified_accounts[row_index].fullNameClient = $(this).val();
+     
+      console.log(modified_accounts);
     }else{
       console.log('no funciona');
     }
@@ -138,7 +145,7 @@ function setDinamicClients(data_clients) {
     if (!is_valid_name && !is_valid_amount && !is_valid_date) {
       //*si is_valid_names NO tiene la clase error esta Ok
       console.log(modified_accounts);
-      console.log(accounts);
+      //console.log(accounts);
       console.log("modificando datos");
       //*los names estan listos para ser añadidos al objeto
     } else {
