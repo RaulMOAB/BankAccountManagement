@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const mysql = require('mysql');
 const { connect } = require('http2');
 const app = express();
+const path = require('path');
 const cors = require('cors');
 
 app.use(function(req, res, next) {
@@ -18,9 +19,10 @@ app.use(function(req, res, next) {
 app.use(cors());
 app.use(bodyParser.urlencoded({extended:false}))
 app.use(bodyParser.json());
+app.use('/', express.static(path.join(__dirname, 'public')));
 
 
-//Create mysql connectiion
+//Create mysql connection
 let connection = mysql.createConnection({
     host:'127.0.0.1',
     database:'BankDB',
