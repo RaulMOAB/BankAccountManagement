@@ -2,6 +2,7 @@
 
 let data_clients;
 let accounts = [];
+let row_index; //*Useful variable to get the row index that was modified
 let modified_accounts = [];
 let list_client_types = ["Poor client", "Normal client", "Very rich client"];
 
@@ -56,7 +57,7 @@ function setDinamicClients(data_clients) {
       "Tax-Free Savings Account",
     ];
     let select = `<td><select>`;
-    //*OPTION
+
     account_options.forEach((item, index) => {
       if (element.ACCOUNT_TYPE === item) {
         select += `<option value='${item}' selected >${item}</option>`;
@@ -80,7 +81,7 @@ function setDinamicClients(data_clients) {
     let date = formatDate(element.ENTRY_DATE);
 
     row += `<td><input type='text' class='entry_date' id='date_input_${index}' value='${date}'></td>`;
-   
+
     row += "</tr>";
     table_body.append(row);
 
@@ -96,40 +97,50 @@ function setDinamicClients(data_clients) {
       client_type
     ); //*Parent Obj
     accounts.push(account); //*Add all clients into an array
-    modified_accounts = accounts.map((element)=>{//*Copy from original array
+
+    //*Copy from original array
+    modified_accounts = accounts.map((element) => {
       return element;
-    })
+    });
   });
-//console.log(accounts);
+
   //*******TEST********/
   $(".names").change(function () {
     if (validateFullName($(this))) {
-      console.log('esta ok');
-      //**funcion de añadir propiedad al nuevo array de objetos modificados
-      let row_index = $(this).parent().parent().index(); 
+      row_index = $(this).parent().parent().index();
+      //*Add new name to object
       modified_accounts[row_index].fullNameClient = $(this).val();
-     
-      console.log(modified_accounts);
-    }else{
-      console.log('no funciona');
+    } else {
+      console.log("no funciona");
     }
-    
-    
-
   });
 
   $(".amount").change(function () {
-    validateAmount($(this));
+    if (validateAmount($(this))) {
+      row_index = $(this).parent().parent().index();
+      //*Add new amount to object
+      modified_accounts[row_index].amount = $(this).val();
+    }
   });
 
   $(".entry_date").change(function () {
-    validateDate($(this));
+    if (validateDate($(this))) {
+      row_index = $(this).parent().parent().index();
+      modified_accounts[row_index].entryDate = $(this).val();
+      console.log(modified_accounts);
+    }
   });
 
   $("select").change("option", function () {
-    console.log($(this).val()); // valor
-
-    
+    row_index = $(this).parent().parent().index();
+    client_dni = modified_accounts[row_index].DNI; //*Get DNI client to initialize the obj AccountTypeObj
+    //*Add the new account type to object
+    modified_accounts[row_index].accountType = new AccountTypeObj(
+      client_dni,
+      $(this).val(),
+      ""
+    );
+    //console.log(modified_accounts);
   });
 
   //-----------BUTTON EVENT------------//
@@ -151,11 +162,10 @@ function setDinamicClients(data_clients) {
     } else {
       console.log("hay clase error");
     }
-
   });
-  validateDate();
+  
 }
-
+//TODO repasar funcion
 function formatDate(db_date) {
   let new_date = new Date(db_date);
   let date_formated =
@@ -181,20 +191,19 @@ function validateFullName(name) {
   } else {
     $(name).css("border-color", "crimson");
     $(name).addClass("error");
-   return false;
+    return false;
   }
 }
 
 function validateAmount(amount) {
   let amount_value = $(amount).val();
-  //
+
   const regExp =
     /\b((?:\d+|\d{1,3}(?:[,.\s]\d{3})*)(?:[,.\s]*\d+)?)\s(?:euros?|€)/;
 
   if (regExp.test(amount_value)) {
     $(amount).removeClass("error");
     $(amount).css("border-color", "green");
-
     let format_amount = parseFloat(
       amount_value.replace(" €", "").replace(".", "").trim()
     );
@@ -209,16 +218,11 @@ function validateAmount(amount) {
       $(amount).parent().next().children().val(list_client_types[0]);
       $(amount).css("color", "red");
     }
-
-   /*  let row_amount_index = $(amount).parent().parent().index(); 
-    let modified_amount = accounts[row_amount_index];
-    modified_amount.amount = amount_value;
-    modified_accounts.push(modified_amount); */
-
-
+    return true;
   } else {
     $(amount).addClass("error");
     $(amount).css("border-color", "crimson");
+    return false;
   }
 }
 
@@ -226,15 +230,20 @@ function validateDate(date) {
   let bd_date = $(date).val();
   let new_date = new Date(bd_date);
   let today = new Date();
+  //? To solve the problem when user put today date compared to today
+  //? Reset the time to solve miliseconds bug
   today.setHours(0, 0, 0, 0);
   new_date.setHours(0, 0, 0, 0);
+
   let correct_date = new_date.getTime() < today.getTime();
 
   if (correct_date) {
     $(date).removeClass("error");
     $(date).css("border-color", "green");
+    return true;
   } else {
     $(date).addClass("error");
     $(date).css("border-color", "crimson");
+    return false;
   }
 }
