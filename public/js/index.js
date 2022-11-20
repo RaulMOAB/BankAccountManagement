@@ -73,10 +73,31 @@ function setDinamicClients(data_clients) {
     row += `<td><input type='text' class='amount' id='amount_input_${index}' value='${element.AMOUNT}'></td>`;
 
     row += `<td><input type='text' class='client' id='client_type_${index}' disabled value='${element.CLIENT_TYPE}'></td>`;
-
+    
+    //****DATEPICKER******/
+    $.datepicker.regional['ca'] = {
+      closeText: 'Tanca',
+      prevText: '< Anterior',
+      nextText: 'Següent >',
+      currentText: 'Avui',
+      monthNames: ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Decembre'],
+      monthNamesShort: ['Gen','Feb','Març','Abr', 'Maig','Juny','Jul','Ago','Sep', 'Oct','Nov','Des'],
+      dayNames: ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijuous', 'Divendres', 'Disabte'],
+      dayNamesShort: ['Dg','Dl','Dt','Dc','Dj','Dv','Ds'],
+      dayNamesMin: ['Dg','Dl','Dt','Dc','Dj','Dv','Ds'],
+      weekHeader: 'Sm',
+      dateFormat: 'mm/dd/yy',
+      firstDay: 1,
+      isRTL: false,
+      showMonthAfterYear: false,
+      yearSuffix: ''
+      };
+      $.datepicker.setDefaults($.datepicker.regional['ca']);
     $(function () {
       $(".entry_date").datepicker();
     });
+    
+    
 
     let date = formatDate(element.ENTRY_DATE);
 
@@ -127,7 +148,7 @@ function setDinamicClients(data_clients) {
     if (validateDate($(this))) {
       row_index = $(this).parent().parent().index();
       modified_accounts[row_index].entryDate = $(this).val();
-      console.log(modified_accounts);
+      //console.log(modified_accounts);
     }
   });
 
@@ -140,7 +161,7 @@ function setDinamicClients(data_clients) {
       $(this).val(),
       ""
     );
-    //console.log(modified_accounts);
+    
   });
 
   //-----------BUTTON EVENT------------//
@@ -154,11 +175,21 @@ function setDinamicClients(data_clients) {
     is_valid_date = entry_dates.hasClass("error");
 
     if (!is_valid_name && !is_valid_amount && !is_valid_date) {
-      //*si is_valid_names NO tiene la clase error esta Ok
-      console.log(modified_accounts);
-      //console.log(accounts);
+      //*Obj is okey to post request
+      //console.log(modified_accounts);
+      
       console.log("modificando datos");
-      //*los names estan listos para ser añadidos al objeto
+    //*Coonvert array of objects into an object to be stored in LocalStorage*/
+      const arrayToObject = {...modified_accounts}
+      console.log( modified_accounts);
+      console.log( arrayToObject); 
+      console.log(JSON.stringify(arrayToObject));
+      
+
+      window.localStorage.setItem("ClientsAccounts", JSON.stringify(arrayToObject))
+      let clients_localstorage = window.localStorage.getItem("ClientsAccounts");
+      console.log("ClientsAccounts", JSON.parse(clients_localstorage));
+
     } else {
       console.log("hay clase error");
     }
