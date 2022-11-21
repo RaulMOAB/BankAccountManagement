@@ -1,9 +1,9 @@
 //______________Global_vars__________________//
 
 let data_clients;
-let accounts = [];
+let accounts = [];//*Raw data from database
 let row_index; //*Useful variable to get the row index that was modified
-let modified_accounts = [];
+let modified_accounts = [];//*Copy from original data contains modified data
 let list_client_types = ["Poor client", "Normal client", "Very rich client"];
 
 let account;
@@ -119,10 +119,10 @@ function setDinamicClients(data_clients) {
     ); //*Parent Obj
     accounts.push(account); //*Add all clients into an array
 
-    //*Copy from original array
+  /*   //*Copy from original array
     modified_accounts = accounts.map((element) => {
       return element;
-    });
+    }); */
   });
 
   //*******TEST********/
@@ -130,7 +130,7 @@ function setDinamicClients(data_clients) {
     if (validateFullName($(this))) {
       row_index = $(this).parent().parent().index();
       //*Add new name to object
-      modified_accounts[row_index].fullNameClient = $(this).val();
+      accounts[row_index].fullNameClient = $(this).val();
     } else {
       console.log("no funciona");
     }
@@ -140,14 +140,14 @@ function setDinamicClients(data_clients) {
     if (validateAmount($(this))) {
       row_index = $(this).parent().parent().index();
       //*Add new amount to object
-      modified_accounts[row_index].amount = $(this).val();
+      accounts[row_index].amount = $(this).val();
     }
   });
 
   $(".entry_date").change(function () {
     if (validateDate($(this))) {
       row_index = $(this).parent().parent().index();
-      modified_accounts[row_index].entryDate = $(this).val();
+      accounts[row_index].entryDate = $(this).val();
       //console.log(modified_accounts);
     }
   });
@@ -156,7 +156,7 @@ function setDinamicClients(data_clients) {
     row_index = $(this).parent().parent().index();
     client_dni = modified_accounts[row_index].DNI; //*Get DNI client to initialize the obj AccountTypeObj
     //*Add the new account type to object
-    modified_accounts[row_index].accountType = new AccountTypeObj(
+    accounts[row_index].accountType = new AccountTypeObj(
       client_dni,
       $(this).val(),
       ""
@@ -176,27 +176,43 @@ function setDinamicClients(data_clients) {
 
     if (!is_valid_name && !is_valid_amount && !is_valid_date) {
       //*Obj is okey to post request
-      //console.log(modified_accounts);
-      
       console.log("modificando datos");
-    //*Coonvert array of objects into an object to be stored in LocalStorage*/
-      const arrayToObject = {...modified_accounts}
-      console.log( modified_accounts);
-      console.log( arrayToObject); 
-      console.log(JSON.stringify(arrayToObject));
+
+      //*Create an auxiliar object to JSON.stringify
+      accounts.forEach((account) => {
+       // console.log(account.accountType);
+        let auxObj = {
+          DNI: account.DNI,
+          NAME: account.fullNameClient,
+          ACCOUNT_TYPE: account.accountType.accountType,
+          CLIENT_TYPE: account.clientType.client_type,
+          ENTRY_DATE: account.entryDate,
+        };
+        
+        modified_accounts.push(auxObj);
+      });
+      console.log(modified_accounts);
+      //console.log(data_clients);
+      
+    
+
       
 
-      window.localStorage.setItem("ClientsAccounts", JSON.stringify(arrayToObject))
-      let clients_localstorage = window.localStorage.getItem("ClientsAccounts");
-      console.log("ClientsAccounts", JSON.parse(clients_localstorage));
+      //*Store object in LocalStorage
+      //?Noguarda un obj dentro de otro
+      storeObjectLocalStorage(data_clients);
 
+      //let data = JSON.stringify(modified_accounts)
+
+      sendDataToDB(modified_accounts);
     } else {
       console.log("hay clase error");
     }
   });
   
 }
-//TODO repasar funcion
+//-----------------FUNCTIONS---------------// 
+
 function formatDate(db_date) {
   let new_date = new Date(db_date);
   let date_formated =
@@ -277,4 +293,24 @@ function validateDate(date) {
     $(date).css("border-color", "crimson");
     return false;
   }
+}
+
+function storeObjectLocalStorage(object) {
+  window.localStorage.setItem(
+    "ClientsAccounts",
+    JSON.stringify(object)
+  );
+}
+
+function sendDataToDB(modified_accounts){
+  $.ajax({
+    type:"POST",
+    url: "http://127.0.0.1:3000/api/updates",
+    data: {accounts: modified_accounts, num: modified_accounts.length},
+    dataType: "json",
+    success: function (result) {
+      console.log("Llamada a api, updates");
+      data_clients = result.response;
+    },
+  })
 }

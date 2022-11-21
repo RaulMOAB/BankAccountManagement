@@ -17,7 +17,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(cors());
-app.use(bodyParser.urlencoded({extended:false}))
+app.use(bodyParser.urlencoded({extended:true}))
 app.use(bodyParser.json());
 app.use('/', express.static(path.join(__dirname, 'public')));
 
@@ -50,6 +50,27 @@ app.get('/api/clients', (req, res)=>{
     })
 })
 
+app.post('/api/updates', (req, res)=>{
+    console.log('llego al post');
+    let data = req.body;
+    console.log(data.accounts);
+
+    data.accounts.forEach((account)=>{
+        connection.query(`UPDATE Clients SET 
+        NAME = '${account.NAME}',
+        ACCOUNT_TYPE = '${account.ACCOUNT_TYPE}',
+        AMOUNT= '${account.AMOUNT}',
+        CLIENT_TYPE= '${account.CLIENT_TYPE}',
+        ENTRY_DATE = '${account.ENTRY_DATE}' WHERE DNI = '${account.DNI}'`, (error, results, field)=>{
+            if (error) {
+                res.status(400).send({response: null})
+            }else{//Connection OK
+                res.status(200).send({response: results})
+            }
+        })
+    })
+   //
+})
 
 app.listen(3000, ()=>{
     console.log('Aquesta és la nostra API-REST que corre en http://localhost:3000')
