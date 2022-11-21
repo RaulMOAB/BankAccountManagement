@@ -55,6 +55,7 @@ app.post('/api/updates', (req, res)=>{
     let data = req.body;
     console.log(data.accounts);
 
+    //? crear query que haga update todos juntos 
     data.accounts.forEach((account)=>{
         connection.query(`UPDATE Clients SET 
         NAME = '${account.NAME}',
@@ -62,10 +63,10 @@ app.post('/api/updates', (req, res)=>{
         AMOUNT= '${account.AMOUNT}',
         CLIENT_TYPE= '${account.CLIENT_TYPE}',
         ENTRY_DATE = '${account.ENTRY_DATE}' WHERE DNI = '${account.DNI}'`, (error, results, field)=>{
-            if (error) {
+            if (error) {//!
                 res.status(400).send({response: null})
             }else{//Connection OK
-                res.status(200).send({response: results})
+                //res.status(200).send({response: results})
             }
         })
     })

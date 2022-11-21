@@ -185,11 +185,12 @@ function setDinamicClients(data_clients) {
           DNI: account.DNI,
           NAME: account.fullNameClient,
           ACCOUNT_TYPE: account.accountType.accountType,
+          AMOUNT: account.amount,
           CLIENT_TYPE: account.clientType.client_type,
           ENTRY_DATE: account.entryDate,
         };
-        
-        modified_accounts.push(auxObj);
+
+        modified_accounts.push(auxObj);//!
       });
       console.log(modified_accounts);
       //console.log(data_clients);
@@ -205,6 +206,7 @@ function setDinamicClients(data_clients) {
       //let data = JSON.stringify(modified_accounts)
 
       sendDataToDB(modified_accounts);
+      modified_accounts = [];//*Reset array
     } else {
       console.log("hay clase error");
     }
@@ -306,7 +308,7 @@ function sendDataToDB(modified_accounts){
   $.ajax({
     type:"POST",
     url: "http://127.0.0.1:3000/api/updates",
-    data: {accounts: modified_accounts, num: modified_accounts.length},
+    data: {accounts: modified_accounts},
     dataType: "json",
     success: function (result) {
       console.log("Llamada a api, updates");
