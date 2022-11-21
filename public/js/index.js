@@ -1,9 +1,9 @@
 //______________Global_vars__________________//
 
 let data_clients;
-let accounts = [];//*Raw data from database
+let accounts = []; //*Raw data from database
+let modified_accounts = []; //*Copy from original data contains modified data
 let row_index; //*Useful variable to get the row index that was modified
-let modified_accounts = [];//*Copy from original data contains modified data
 let list_client_types = ["Poor client", "Normal client", "Very rich client"];
 
 let account;
@@ -38,7 +38,7 @@ function getApiClients() {
 function setDinamicClients(data_clients) {
   let table_body = $("#tbody");
 
-  //--------CREATE TABLE--------//
+  //--------CREATE DINAMIC TABLE--------//
 
   data_clients.forEach((element, index) => {
     let row = `<tr>`;
@@ -58,6 +58,7 @@ function setDinamicClients(data_clients) {
     ];
     let select = `<td><select>`;
 
+    //*Add options to select tag
     account_options.forEach((item, index) => {
       if (element.ACCOUNT_TYPE === item) {
         select += `<option value='${item}' selected >${item}</option>`;
@@ -73,31 +74,9 @@ function setDinamicClients(data_clients) {
     row += `<td><input type='text' class='amount' id='amount_input_${index}' value='${element.AMOUNT}'></td>`;
 
     row += `<td><input type='text' class='client' id='client_type_${index}' disabled value='${element.CLIENT_TYPE}'></td>`;
-    
+
     //****DATEPICKER******/
-    $.datepicker.regional['ca'] = {
-      closeText: 'Tanca',
-      prevText: '< Anterior',
-      nextText: 'Següent >',
-      currentText: 'Avui',
-      monthNames: ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Decembre'],
-      monthNamesShort: ['Gen','Feb','Març','Abr', 'Maig','Juny','Jul','Ago','Sep', 'Oct','Nov','Des'],
-      dayNames: ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijuous', 'Divendres', 'Disabte'],
-      dayNamesShort: ['Dg','Dl','Dt','Dc','Dj','Dv','Ds'],
-      dayNamesMin: ['Dg','Dl','Dt','Dc','Dj','Dv','Ds'],
-      weekHeader: 'Sm',
-      dateFormat: 'mm/dd/yy',
-      firstDay: 1,
-      isRTL: false,
-      showMonthAfterYear: false,
-      yearSuffix: ''
-      };
-      $.datepicker.setDefaults($.datepicker.regional['ca']);
-    $(function () {
-      $(".entry_date").datepicker();
-    });
-    
-    
+    setDatePicker();
 
     let date = formatDate(element.ENTRY_DATE);
 
@@ -118,11 +97,6 @@ function setDinamicClients(data_clients) {
       client_type
     ); //*Parent Obj
     accounts.push(account); //*Add all clients into an array
-
-  /*   //*Copy from original array
-    modified_accounts = accounts.map((element) => {
-      return element;
-    }); */
   });
 
   //*******TEST********/
@@ -131,15 +105,12 @@ function setDinamicClients(data_clients) {
       row_index = $(this).parent().parent().index();
       //*Add new name to object
       accounts[row_index].fullNameClient = $(this).val();
-    } else {
-      console.log("no funciona");
-    }
+    } 
   });
 
   $(".amount").change(function () {
     if (validateAmount($(this))) {
       row_index = $(this).parent().parent().index();
-      //*Add new amount to object
       accounts[row_index].amount = $(this).val();
     }
   });
@@ -148,20 +119,18 @@ function setDinamicClients(data_clients) {
     if (validateDate($(this))) {
       row_index = $(this).parent().parent().index();
       accounts[row_index].entryDate = $(this).val();
-      //console.log(modified_accounts);
     }
   });
 
   $("select").change("option", function () {
     row_index = $(this).parent().parent().index();
-    client_dni = modified_accounts[row_index].DNI; //*Get DNI client to initialize the obj AccountTypeObj
+    client_dni = accounts[row_index].DNI; //*Get DNI client to initialize the obj AccountTypeObj
     //*Add the new account type to object
     accounts[row_index].accountType = new AccountTypeObj(
       client_dni,
       $(this).val(),
       ""
     );
-    
   });
 
   //-----------BUTTON EVENT------------//
@@ -175,12 +144,9 @@ function setDinamicClients(data_clients) {
     is_valid_date = entry_dates.hasClass("error");
 
     if (!is_valid_name && !is_valid_amount && !is_valid_date) {
-      //*Obj is okey to post request
-      console.log("modificando datos");
-
-      //*Create an auxiliar object to JSON.stringify
+      //*Obj is valid to a post request
       accounts.forEach((account) => {
-       // console.log(account.accountType);
+
         let auxObj = {
           DNI: account.DNI,
           NAME: account.fullNameClient,
@@ -190,31 +156,94 @@ function setDinamicClients(data_clients) {
           ENTRY_DATE: account.entryDate,
         };
 
-        modified_accounts.push(auxObj);//!
+        //*Compare objects to get only the row that was modified
+        data_clients.forEach((element) => {
+          let original_clients = JSON.stringify(element);
+          let rows_modified = JSON.stringify(auxObj);
+
+          if (rows_modified != original_clients && element.DNI === auxObj.DNI) {
+            modified_accounts.push(auxObj);
+          }
+        });
       });
-      console.log(modified_accounts);
-      //console.log(data_clients);
-      
-    
-
-      
-
-      //*Store object in LocalStorage
-      //?Noguarda un obj dentro de otro
-      storeObjectLocalStorage(data_clients);
-
-      //let data = JSON.stringify(modified_accounts)
 
       sendDataToDB(modified_accounts);
-      modified_accounts = [];//*Reset array
+      modified_accounts = []; //*Reset array
+
+      //*Store object in LocalStorage
+      storeObjectLocalStorage(data_clients);
     } else {
       console.log("hay clase error");
     }
   });
-  
 }
-//-----------------FUNCTIONS---------------// 
+//-----------------FUNCTIONS---------------//
+/**
+ * Function to set datePicker
+ */
+function setDatePicker() {
+  $.datepicker.regional["ca"] = {
+    closeText: "Tanca",
+    prevText: "< Anterior",
+    nextText: "Següent >",
+    currentText: "Avui",
+    monthNames: [
+      "Gener",
+      "Febrer",
+      "Març",
+      "Abril",
+      "Maig",
+      "Juny",
+      "Juliol",
+      "Agost",
+      "Setembre",
+      "Octubre",
+      "Novembre",
+      "Decembre",
+    ],
+    monthNamesShort: [
+      "Gen",
+      "Feb",
+      "Març",
+      "Abr",
+      "Maig",
+      "Juny",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Des",
+    ],
+    dayNames: [
+      "Diumenge",
+      "Dilluns",
+      "Dimarts",
+      "Dimecres",
+      "Dijuous",
+      "Divendres",
+      "Disabte",
+    ],
+    dayNamesShort: ["Dg", "Dl", "Dt", "Dc", "Dj", "Dv", "Ds"],
+    dayNamesMin: ["Dg", "Dl", "Dt", "Dc", "Dj", "Dv", "Ds"],
+    weekHeader: "Sm",
+    dateFormat: "mm/dd/yy",
+    firstDay: 1,
+    isRTL: false,
+    showMonthAfterYear: false,
+    yearSuffix: "",
+  };
+  $.datepicker.setDefaults($.datepicker.regional["ca"]);
+  $(function () {
+    $(".entry_date").datepicker();
+  });
+}
 
+/**
+ * Function to format data from BD to a format mm/dd/yyyy
+ * @param {*} db_date date recieved from base date
+ * @returns formated date
+ */
 function formatDate(db_date) {
   let new_date = new Date(db_date);
   let date_formated =
@@ -228,6 +257,11 @@ function formatDate(db_date) {
   return date_formated;
 }
 
+/**
+ * Function that validates client's full name by a regExp
+ * @param {*} name client name
+ * @returns true or false
+ */
 function validateFullName(name) {
   let name_value = $(name).val();
   const regExp =
@@ -244,6 +278,11 @@ function validateFullName(name) {
   }
 }
 
+/**
+ * Function that validates the client's amount by a regExp
+ * @param {*} amount client amount
+ * @returns true or false
+ */
 function validateAmount(amount) {
   let amount_value = $(amount).val();
 
@@ -275,6 +314,11 @@ function validateAmount(amount) {
   }
 }
 
+/**
+ * Function that valisdate if date picked by user to modify it it is a valid date or not
+ * @param {*} date new date to modify
+ * @returns true or false
+ */
 function validateDate(date) {
   let bd_date = $(date).val();
   let new_date = new Date(bd_date);
@@ -297,22 +341,45 @@ function validateDate(date) {
   }
 }
 
+/**
+ * Function that stores an object in localStorage
+ * @param {*} object object to store
+ */
 function storeObjectLocalStorage(object) {
-  window.localStorage.setItem(
-    "ClientsAccounts",
-    JSON.stringify(object)
-  );
+  window.localStorage.setItem("ClientsAccounts", JSON.stringify(object));
 }
 
-function sendDataToDB(modified_accounts){
+/**
+ * Function that send all data from modified rows to the server side
+ * and shows a response message in to the modal window
+ * @param {*} modified_accounts rows that contains modified data
+ */
+function sendDataToDB(modified_accounts) {
   $.ajax({
-    type:"POST",
+    type: "POST",
     url: "http://127.0.0.1:3000/api/updates",
-    data: {accounts: modified_accounts},
+    data: { accounts: modified_accounts },
     dataType: "json",
     success: function (result) {
       console.log("Llamada a api, updates");
-      data_clients = result.response;
+      server_response = result.response;
+
+      if (server_response !== null) {
+        $("#server-msg").text("Update succesfully");
+        $("#success-icon").hide();
+        $("#spinner").show();
+        setTimeout(function () {
+          $("#spinner").hide();
+          $("#success-icon").show();
+        }, 3000);
+      } else {
+        $("#server-msg").text("Error, Try again");
+        $("#spinner").show();
+        setTimeout(function () {
+          $("#spinner").hide();
+          $("#error-icon").show();
+        }, 3000);
+      }
     },
-  })
+  });
 }
