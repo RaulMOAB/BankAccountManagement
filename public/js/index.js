@@ -17,9 +17,6 @@ let is_valid_date = true;
 //___________________DOM_____________________//
 $(document).ready(function () {
   getApiClients();
-  $("input").on("click", ".names", function () {
-    console.log("click");
-  });
 });
 //______________Functions_here________________//
 
