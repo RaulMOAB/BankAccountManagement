@@ -4,7 +4,7 @@
 
 In this project we created an account management for a bank where you can see all clients information from the database
 and modify data clients.
-Once the data is modified database will be update by a POST method end a result missage will apear to notify if the data was successfylly updated or not
+Once the data is modified database will be updated by a POST method end a result missage will apear to notify if the data was successfylly updated or not
 
 
 ## Dir structure
